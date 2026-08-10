@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Phone Live Racing Leaderboard</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#111;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Arial",sans-serif}
+header{padding:16px;background:#181818;position:sticky;top:0;z-index:5;border-bottom:1px solid #333}
+h1{font-size:21px;margin:0 0 4px}.hint{font-size:12px;color:#aaa}
+.wrap{padding:12px;max-width:700px;margin:auto}.card{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:12px;margin-bottom:12px}
+label{font-size:12px;color:#aaa;display:block;margin-bottom:5px}input{width:100%;background:#0f0f0f;border:1px solid #3a3a3a;color:white;border-radius:8px;padding:11px;font-size:16px}
+.grid{display:grid;grid-template-columns:1fr 100px;gap:10px}.driver{display:grid;grid-template-columns:34px 1fr 48px 48px;gap:6px;align-items:center;padding:8px 0;border-top:1px solid #292929}
+.pos{font-weight:800;font-size:17px;text-align:center}.btn{border:0;border-radius:8px;background:#333;color:#fff;font-size:22px;height:42px}.up{background:#173fd6}.down{background:#444}.save{width:100%;background:#173fd6;color:white;border:0;border-radius:9px;padding:12px;font-weight:800;font-size:16px}
+.tabs{display:flex;gap:8px;margin-bottom:12px}.tab{flex:1;padding:11px;border-radius:9px;border:1px solid #333;background:#222;color:#fff;font-weight:700}.active{background:#173fd6}
+#view{background:transparent;min-height:100vh;padding:18px}
+.board{width:min(460px,100%);background:rgba(0,0,0,.93);border-left:5px solid #173fd6}
+.title{padding:12px 14px 7px;font-weight:900;font-size:21px;letter-spacing:.7px}.meta{padding:0 14px 10px;color:#aaa;font-size:12px}
+.r{display:grid;grid-template-columns:36px 1fr 70px;align-items:center;min-height:43px;border-top:1px solid #252525;padding:0 12px}.rp{font-size:18px;font-weight:900}.rn{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rg{text-align:right;color:#bbb;font-size:12px}
+#view .board{margin:auto}
+.hide{display:none!important}
+.note{font-size:12px;color:#aaa;line-height:1.4}
+</style>
+</head>
+<body>
+<div id="control">
+<header><h1>🏁 Live Racing Leaderboard</h1><div class="hint">Phone control panel — changes update the display instantly.</div></header>
+<div class="wrap">
+<div class="tabs"><button class="tab active" onclick="show('control')">Control</button><button class="tab" onclick="show('view')">Leaderboard</button></div>
+<div class="card">
+<div class="grid">
+<div><label>Race title</label><input id="title" value="FINAL RACE"></div>
+<div><label>Lap</label><input id="lap" type="number" value="1" min="0"></div>
+</div>
+<br><div class="grid"><div><label>Total laps</label><input id="total" type="number" value="10" min="0"></div><div><label>&nbsp;</label><button class="save" onclick="nextLap()">NEXT</button></div></div>
+</div>
+<div class="card"><div id="drivers"></div></div>
+<div class="card"><button class="save" onclick="reset()">RESET POSITIONS</button><p class="note">Tap ▲ or ▼ when a driver changes position. Edit names and gaps whenever needed.</p></div>
+</div>
+</div>
+
+<div id="view" class="hide">
+<header><h1>Leaderboard Preview</h1><div class="hint">Use this page as the overlay/display view.</div></header>
+<div style="padding:18px"><div class="board">
+<div class="title" id="vtitle">FINAL RACE</div>
+<div class="meta">LAP <span id="vlap">1</span> / <span id="vtotal">10</span></div>
+<div id="list"></div>
+</div></div>
+</div>
+
+<script>
+const key="phoneRaceLB";
+const def={title:"FINAL RACE",lap:1,total:10,drivers:[
+{name:"NCS Braxton",start:1,gap:"+0.0"},{name:"Driver 2",start:2,gap:"+1.2"},
+{name:"Driver 3",start:3,gap:"+2.7"},{name:"Driver 4",start:4,gap:"+4.1"},
+{name:"Driver 5",start:5,gap:"+6.8"},{name:"Driver 6",start:6,gap:"+8.3"},
+{name:"Driver 7",start:7,gap:"+11.4"},{name:"Driver 8",start:8,gap:"+14.9"}]};
+let s=JSON.parse(localStorage.getItem(key)||"null")||def;
+function persist(){localStorage.setItem(key,JSON.stringify(s));render()}
+function render(){
+ document.getElementById("title").value=s.title;document.getElementById("lap").value=s.lap;document.getElementById("total").value=s.total;
+ document.getElementById("drivers").innerHTML=s.drivers.map((d,i)=>`<div class="driver">
+ <div class="pos">P${i+1}</div>
+ <input value="${esc(d.name)}" onchange="s.drivers[${i}].name=this.value;persist()">
+ <button class="btn up" onclick="move(${i},-1)">▲</button><button class="btn down" onclick="move(${i},1)">▼</button></div>`).join("");
+ document.getElementById("vtitle").textContent=s.title;document.getElementById("vlap").textContent=s.lap;document.getElementById("vtotal").textContent=s.total;
+ document.getElementById("list").innerHTML=s.drivers.map((d,i)=>`<div class="r"><div class="rp">${i+1}</div><div class="rn">${esc(d.name)}</div><div class="rg">${esc(d.gap)}</div></div>`).join("");
+}
+function esc(x){return String(x).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function move(i,d){let j=i+d;if(j<0||j>=s.drivers.length)return;[s.drivers[i],s.drivers[j]]=[s.drivers[j],s.drivers[i]];persist()}
+function nextLap(){s.title=document.getElementById("title").value||"FINAL RACE";s.total=+document.getElementById("total").value||0;s.lap=Math.min(s.total||999,s.lap+1);persist()}
+function reset(){s.drivers.sort((a,b)=>a.start-b.start);s.lap=1;persist()}
+function show(which){document.getElementById("control").classList.toggle("hide",which!=="control");document.getElementById("view").classList.toggle("hide",which!=="view");document.querySelectorAll(".tab").forEach((b,i)=>b.classList.toggle("active",(which==="control"&&i===0)||(which==="view"&&i===1)))}
+["title","lap","total"].forEach(id=>document.getElementById(id).addEventListener("change",()=>{s.title=document.getElementById("title").value;s.lap=+document.getElementById("lap").value||0;s.total=+document.getElementById("total").value||0;persist()}));
+render();
+</script>
+</body>
+</html>
