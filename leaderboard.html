@@ -50,10 +50,10 @@ label{font-size:10px;color:#aaa;display:block;margin-bottom:5px}input{width:85%;
 <script>
 const key="phoneRaceLB";
 const def={title:"FINAL RACE",lap:1,total:10,drivers:[
-{name:"NCS Braxton",start:1,gap:"+0.0"},{name:"Driver 2",start:2,gap:"+1.2"},
-{name:"Driver 3",start:3,gap:"+2.7"},{name:"Driver 4",start:4,gap:"+4.1"},
-{name:"Driver 5",start:5,gap:"+6.8"},{name:"Driver 6",start:6,gap:"+8.3"},
-{name:"Driver 7",start:7,gap:"+11.4"},{name:"Driver 8",start:8,gap:"+14.9"}]};
+{name:"NCS Rylan",start:1,gap:"+0.0"},{name:"NCS Eli",start:2,gap:"+0.0"},
+{name:"NCS Braxton",start:3,gap:"+0.0"},{name:"NCS Donovan",start:4,gap:"+0.0"},
+{name:"Jonathan (Fam)",start:5,gap:"+0.0"},{name:"NCS Davi",start:6,gap:"+0.0"},
+{name:"Laura (Fam)",start:7,gap:"+0.0"},{name:"John (Fam)",start:8,gap:"+0.0"}]};
 let s=JSON.parse(localStorage.getItem(key)||"null")||def;
 function persist(){localStorage.setItem(key,JSON.stringify(s));render()}
 function render(){
